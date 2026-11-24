@@ -94,21 +94,32 @@ end
 --- Encontra o socket ativo do WezTerm.
 --- @return string|nil
 function M._find_wezterm_socket()
-	local env_socket = os.getenv('WEZTERM_UNIX_SOCKET')
-	if env_socket and vim.uv.fs_stat(env_socket) then
-		local pid = tonumber(env_socket:match('gui%-sock%-(%d+)'))
-		if pid and vim.uv.kill(pid, 0) == 0 then
-			return env_socket
-		end
+	local home = vim.env.HOME or vim.env.USERPROFILE or os.getenv('HOME') or os.getenv('USERPROFILE')
+
+	if not home then
+		return nil
 	end
-	local sockets = vim.fn.glob(os.getenv('HOME') .. '/.local/share/wezterm/gui-sock-*', true, true)
-	for _, sock in ipairs(sockets) do
-		local pid = tonumber(sock:match('gui%-sock%-(%d+)'))
-		if pid and vim.uv.kill(pid, 0) == 0 then
-			return sock
-		end
-	end
-	return nil
+
+	local pattern = vim.fs.joinpath(home, '.local', 'share', 'wezterm', 'gui-sock-*')
+
+	local sockets = vim.fn.glob(pattern, true, true)
+	return sockets[1]
+
+	-- local env_socket = os.getenv('WEZTERM_UNIX_SOCKET')
+	-- if env_socket and vim.uv.fs_stat(env_socket) then
+	-- 	local pid = tonumber(env_socket:match('gui%-sock%-(%d+)'))
+	-- 	if pid and vim.uv.kill(pid, 0) == 0 then
+	-- 		return env_socket
+	-- 	end
+	-- end
+	-- local sockets = vim.fn.glob(os.getenv('HOME') .. '/.local/share/wezterm/gui-sock-*', true, true)
+	-- for _, sock in ipairs(sockets) do
+	-- 	local pid = tonumber(sock:match('gui%-sock%-(%d+)'))
+	-- 	if pid and vim.uv.kill(pid, 0) == 0 then
+	-- 		return sock
+	-- 	end
+	-- end
+	-- return nil
 end
 
 --- @param filepath string
